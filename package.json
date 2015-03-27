@@ -1,0 +1,24 @@
+{
+  "name": "houz-property-getter",
+  "version": "1.0.0",
+  "description": "microservice for fetching property information",
+  "main": "property-fetcher.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cooperjbrandon/houz-property-getter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cooperjbrandon/houz-property-getter/issues"
+  },
+  "homepage": "https://github.com/cooperjbrandon/houz-property-getter",
+  "dependencies": {
+    "amqp": "^0.2.4",
+    "cli-color": "^0.3.3",
+    "moment": "^2.9.0"
+  }
+}
