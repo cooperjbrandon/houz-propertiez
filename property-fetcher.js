@@ -41,6 +41,7 @@ var parsePropertyInfo = function(html) {
 		return propertyInfoObj.minibubble;
 	} catch(err) {
 		console.log('Error parsing JSON: '+ err);
+		console.log(propertyInfoStr);
 	}
 };
 

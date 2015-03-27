@@ -61,6 +61,11 @@ var messageReceiver = function(message, headers, deliveryInfo, messageObject) {
 
 var handlePropertyInfo = function(propertyinfo) {
 	exchange.publish('propertyinfo', { propertyinfo: propertyinfo }); //routingKey, message
+	nextPage();
+};
+
+var nextPage = function() {
+	queue.shift();
 };
 
 module.exports.beginSetup = beginSetup;
