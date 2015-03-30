@@ -36,13 +36,18 @@ var parsePropertyInfo = function(html) {
 		endingIndex--; //keeping going untill hitting a }
 	}
 	var propertyInfoStr = html.slice(startingIndex, endingIndex+1);
+	var sanitizedPropertyInfo = sanitizePropertyInfo(propertyInfoStr);
 	try {
-		var propertyInfoObj = JSON.parse('{'+propertyInfoStr+'}');
+		var propertyInfoObj = JSON.parse('{'+sanitizedPropertyInfo+'}');
 		return propertyInfoObj.minibubble;
 	} catch(err) {
 		console.log('Error parsing JSON: '+ err);
 		console.log(propertyInfoStr);
 	}
+};
+
+var sanitizePropertyInfo = function(propInfo) {
+	return propInfo.replace('"lat":/', '"lat":').replace('"lng":/', '"lng":');
 };
 
 beginSetup(beginFetchOfProperty);
