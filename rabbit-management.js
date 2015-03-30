@@ -8,7 +8,7 @@ clc = require('cli-color');
 moment = require('moment');
 
 exchangeName = 'houz-exchange';
-queueName = 'houz-queue-getzipid';
+queueName = 'houz-queue-zipid';
 routingKey = 'zipids';
 
 var beginSetup = function(beginFetch) {
@@ -61,10 +61,10 @@ var messageReceiver = function(message, headers, deliveryInfo, messageObject) {
 
 var handlePropertyInfo = function(propertyinfo) {
 	exchange.publish('propertyinfo', { propertyinfo: propertyinfo }); //routingKey, message
-	nextPage();
+	nextItem();
 };
 
-var nextPage = function() {
+var nextItem = function() {
 	queue.shift();
 };
 
