@@ -30,24 +30,29 @@ var fetchProperty = function(zipid) {
 };
 
 var parsePropertyInfo = function(html) {
+	var propertyInfoStr, sanitizedPropertyInfo, propertyInfoObj, formattedInfo, doReturn = true;
+
 	var startingIndex = html.indexOf('"minibubble"');
 	var endingIndex = html.indexOf('"enrollmentId"');
 	while (html[endingIndex] !== '}') {
 		endingIndex--; //keeping going untill hitting a }
 	}
 	try {
-		var propertyInfoStr = html.slice(startingIndex, endingIndex+1);
-		// var sanitizedPropertyInfo = sanitizePropertyInfo(propertyInfoStr);
-		var propertyInfoObj = JSON.parse('{'+propertyInfoStr+'}');
-		return formatPropertyInfo(propertyInfoObj);
+		propertyInfoStr = html.slice(startingIndex, endingIndex+1);
+		sanitizedPropertyInfo = sanitizePropertyInfo(propertyInfoStr);
+		propertyInfoObj = JSON.parse('{'+sanitizedPropertyInfo+'}');
+		formattedInfo = formatPropertyInfo(propertyInfoObj);
 	} catch(err) {
 		console.log('Error parsing JSON: '+ err);
 		console.log(propertyInfoStr);
+		doReturn = false;
+	} finally {
+		if (doReturn) { return formattedInfo; }
 	}
 };
 
 var sanitizePropertyInfo = function(propInfo) {
-	return propInfo.replace('"lat":/', '"lat":').replace('"lng":/', '"lng":');
+	return propInfo.replace(/\\/g, '')
 };
 
 var formatPropertyInfo = function(propertyInfoObj) {
@@ -76,7 +81,7 @@ var formatPropertyInfo = function(propertyInfoObj) {
 		location: {
 			type: 'Point',
 			coordinates: [propertyInfoObj.minibubble.lng/100000, propertyInfoObj.minibubble.lat/100000]
-		}
+		},
 		bed: propertyInfoObj.minibubble.data.bed,
 		bath: propertyInfoObj.minibubble.data.bath,
 		image: propertyInfoObj.minibubble.data.image,
@@ -102,7 +107,7 @@ var formatPropertyInfo = function(propertyInfoObj) {
 
 var determinePrice = function(priceStr) {
 	// either '700K' or '2.79M' (M or K)
-	var priceNum = JSON.parse(priceStr.slice(0,-1));
+	var priceNum = JSON.parse(priceStr.slice(1,-1));
 	return priceStr.slice(-1 === 'K') ? priceNum * 1000 : priceNum * 1000000;
 };
 
