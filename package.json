@@ -1,25 +1,33 @@
 {
-  "name": "houz-property-getter",
+  "name": "houz-propertiez",
   "version": "1.0.0",
   "description": "microservice for fetching property information",
   "main": "property-fetcher.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node property-fetcher.js",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cooperjbrandon/houz-property-getter.git"
+    "url": "https://github.com/cooperjbrandon/houz-propertiez.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/cooperjbrandon/houz-property-getter/issues"
+    "url": "https://github.com/cooperjbrandon/houz-propertiez/issues"
   },
-  "homepage": "https://github.com/cooperjbrandon/houz-property-getter",
+  "homepage": "https://github.com/cooperjbrandon/houz-propertiez",
   "dependencies": {
     "amqp": "^0.2.4",
     "cli-color": "^0.3.3",
     "houz-config": "git://github.com/cooperjbrandon/houz-config",
-    "moment": "^2.9.0"
+    "moment": "^2.9.0",
+    "request": "^2.55.0"
+  },
+  "devDependencies": {
+    "chai": "^2.2.0",
+    "mocha": "^2.2.1",
+    "nock": "^1.5.0",
+    "sinon": "^1.14.1"
   }
 }
