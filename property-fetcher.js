@@ -1,8 +1,9 @@
-var http, clc, rabbit, beginSetup, handlePropertyInfo;
+var request, clc, moment, rabbit, beginSetup, handlePropertyInfo;
 
-http = require('http');
+request = require('request');
 clc = require('cli-color');
 rabbit = require('./rabbit-management');
+moment = require('moment');
 
 beginSetup = rabbit.beginSetup;
 handlePropertyInfo = rabbit.handlePropertyInfo;
@@ -13,19 +14,12 @@ var beginFetchOfProperty = function(message, headers, deliveryInfo, messageObjec
 
 var fetchProperty = function(zipid) {
 	var url = 'http://www.zillow.com/homes/'+zipid+'_zpid/';
-	console.log(clc.green('SENDING REQUEST: zipid '+ zipid));
-	http.get(url, function(result) {
-		var html = '';
-		console.log(clc.black.bgWhite('STATUS: ' + result.statusCode));
-		result.on('data', function(chunk) {
-			html += new Buffer(chunk).toString('utf8');
-		});
-		result.on('end', function() {
-			var propertyInfo = parsePropertyInfo(html);
-			handlePropertyInfo(propertyInfo);
-		});
-	}).on('error', function(e) {
-		console.log("Got error: " + e.message);
+	request.get(url, function(error, response, body) {
+		if (error) {
+			console.log("Got error: " + error.message);
+		} else {
+			handlePropertyInfo(parsePropertyInfo(body));
+		}
 	});
 };
 
@@ -42,6 +36,7 @@ var parsePropertyInfo = function(html) {
 		sanitizedPropertyInfo = sanitizePropertyInfo(propertyInfoStr);
 		propertyInfoObj = JSON.parse('{'+sanitizedPropertyInfo+'}');
 		formattedInfo = formatPropertyInfo(propertyInfoObj);
+		formattedInfo.postingDate = getPostingDate(html);
 	} catch(err) {
 		console.log('Error parsing JSON: '+ err);
 		console.log(propertyInfoStr);
@@ -80,7 +75,7 @@ var formatPropertyInfo = function(propertyInfoObj) {
 		zipid: propertyInfoObj.minibubble.id,
 		location: {
 			type: 'Point',
-			coordinates: [propertyInfoObj.minibubble.lng/100000, propertyInfoObj.minibubble.lat/100000]
+			coordinates: [determineLng(propertyInfoObj.minibubble.lng), determineLat(propertyInfoObj.minibubble.lat)]
 		},
 		bed: propertyInfoObj.minibubble.data.bed,
 		bath: propertyInfoObj.minibubble.data.bath,
@@ -88,27 +83,42 @@ var formatPropertyInfo = function(propertyInfoObj) {
 		sqft: propertyInfoObj.minibubble.data.sqft,
 		price: determinePrice(propertyInfoObj.minibubble.data.title)
 	};
+	//see houz-config for output object
+};
 
-	/* output object:
-	{
-		zipid:63065270,
-		location: {
-			type: "Point",
-			coordinates: [-121.905723, 37.326918] //lng, lat
-		},
-		bed: 3,
-		bath: 3,
-		image: "http:\\/\\/photos2.zillowstatic.com\\/p_a\\/IStgkrhj0yauk21000000000.jpg",
-		sqft: 1463,
-		price: 700000
-	}
-	*/
+var determineLng = function(lng) {
+	var lngstr = '' + lng;
+	return parseFloat(lngstr.slice(0,4) + '.' + lngstr.slice(4));
+};
+
+var determineLat = function(lat) {
+	var latstr = '' + lat;
+	return parseFloat(latstr.slice(0,2) + '.' + latstr.slice(2));
 };
 
 var determinePrice = function(priceStr) {
 	// either '700K' or '2.79M' (M or K)
 	var priceNum = JSON.parse(priceStr.slice(1,-1));
-	return priceStr.slice(-1 === 'K') ? priceNum * 1000 : priceNum * 1000000;
+	return priceStr.slice(-1) === 'K' ? priceNum * 1000 : priceNum * 1000000;
+};
+
+var getPostingDate = function(html) {
+	var endingIndex = html.indexOf(' days on Zillow');
+	if (endingIndex === -1) {
+		if (html.indexOf('Less than 1 day on Zillow') > -1) {
+			return moment().subtract(1, 'days').format('MM/DD/YYYY');
+		} else {
+			return '1/1/2000';
+		}
+	}
+	var carrotIndex = endingIndex - 1;
+
+	while(html[carrotIndex] !== '>') {
+		carrotIndex--;
+	}
+
+	var days = parseInt(html.slice(carrotIndex + 1, endingIndex));
+	return moment().subtract(days, 'days').format('MM/DD/YYYY');
 };
 
 beginSetup(beginFetchOfProperty);

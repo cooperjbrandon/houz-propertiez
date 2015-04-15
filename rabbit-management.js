@@ -1,5 +1,5 @@
 var amqp, clc, moment, beginFetchOfProperty, config,
-		connection, bindingRoutingKey, publishRoutingKey
+		connection, bindingRoutingKey, publishRoutingKey,
 		queue, queueName, queueConnected,
 		exchange, exchangeName, exchangeConnected;
 
@@ -46,14 +46,15 @@ var queueOrExchangeReady = function(type) {
 		console.log(clc.bgBlueBright('The exchange "' +exchange.name+ '" is ready'));
 		exchangeConnected = true;
 	} else if (type === 'queue') {
-		console.log(clc.blue('The queue "' +queue.name+ '" is bound to the exchange "' +exchangeName+ '" with the routing key "' +routingKey+ '"'));
+		console.log(clc.blue('The queue "' +queue.name+ '" is bound to the exchange "' +exchangeName+ '" with the routing key "' +bindingRoutingKey+ '"'));
 		queueConnected = true;
 	}
 	if (exchangeConnected && queueConnected) { subscribeToQueue(); }
 };
 
 var subscribeToQueue = function() {
-	queue.subscribe({ack: true}, messageReceiver); //subscribe to queue
+	queue.subscribe({ack: true}); //subscribe to queue
+	queue.on('message', messageReceiver);
 };
 
 var messageReceiver = function(message, headers, deliveryInfo, messageObject) {
